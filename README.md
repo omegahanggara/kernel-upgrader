@@ -14,10 +14,7 @@ $ cd kernel-upgrader
 $ bash src/kernel-upgrader.sh
 ```
 
-```
 This repository under maintenace by [omegahanggara](https://github.com/omegahanggara) and [krisanalfa](https://github.com/krisanalfa)
-```
 
-```
+
 Find us on twitter [omegahanggara](https://www.twitter.com/omegahanggara) and [krisanalfa](https://www.twitter.com/krisanalfa)
-```
