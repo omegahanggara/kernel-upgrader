@@ -168,6 +168,7 @@ function testTerminal()
 	openTerminal 2&>1 /dev/null
 	if [[ $? -eq 0 ]]; then
 		cout info "Looks good..."
+		sleep 1
 	else
 		cout error "Looks not good... It's OK tho, but you may experience some problems on installation..."
 	fi
