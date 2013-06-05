@@ -5,8 +5,7 @@ currentKernel=$(uname -r)
 latestKernel=$(curl https://www.kernel.org/ -s | sed -n "/<td id=\"latest_link\">/,/<\/td>/p" | sed -n -e 's/.*<a.*>\(.*\)<\/a>.*/\1/p');
 urlLatestKernel=$(echo "https://www.kernel.org$(curl https://www.kernel.org/ -s | grep $latestKernel | grep downloadarrow | awk -F "<" {'print $2'} | sed "s/a href\=\".\|\">//g")")
 totalProcessor=$(nproc)
-terminal=
-cmd=
+linuxType=$(lsb_release --short --id)
 
 # Function
 cin() {
@@ -57,6 +56,13 @@ function getURL()
 	sleep 1
 	cout info "Found download link at $urlLatestKernel"
 	sleep 1
+}
+
+function checkLinuxType()
+{
+	cout action "Checking your Linux type..."
+	sleep 2
+	cout info "Your Linux type is $linuxType"
 }
 
 function setTerminal()
