@@ -126,6 +126,7 @@ function testTerminal()
 }
 
 checkRoot
+checkLinuxType
 checkCurrentKernel
 checkLatestKernel
 getURL
