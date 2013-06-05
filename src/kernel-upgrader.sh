@@ -65,6 +65,37 @@ function checkLinuxType()
 	cout info "Your Linux type is $linuxType"
 }
 
+function checkDependencies()
+{
+	if [[ $linuxType == "arch" ]]; then
+		cout info "Under maintenance..."
+		sleep 1
+	else
+		cout action "Checking dependencies..."
+		sleep 1
+		cout action "Checking build-essential..."
+		sleep 1
+		if [[ $(dpkg -l | grep ii | grep build-essential | awk {'print $2'}) == "" ]]; then
+			cout error "build-essential is not installed yet. Please install it before using this script."
+			cout action "Quiting..."
+			sleep 1
+			exit 1
+		else
+			cout info "Found build-essential."
+		fi
+		cout action "Checking fakeroot..."
+		sleep 1
+		if [[ $(dpkg -l | grep ii | grep fakeroot | awk {'print $2'}) == "" ]]; then
+			cout error "fakeroot is not installed yet. Please install it before using this script."
+			cout action "Quiting..."
+			sleep 1
+			exit 1
+		else
+			cout info "Found fakeroot."
+		fi
+	fi
+}
+
 function setTerminal()
 {
 	cout action "Setup your default terminal..."
@@ -127,6 +158,7 @@ function testTerminal()
 
 checkRoot
 checkLinuxType
+checkDependencies
 checkCurrentKernel
 checkLatestKernel
 getURL
