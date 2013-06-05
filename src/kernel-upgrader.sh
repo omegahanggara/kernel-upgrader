@@ -34,6 +34,23 @@ function checkRoot()
 	fi
 }
 
+function interrupt()
+{
+	cout error "CAUGHT INTERRUPT SIGNAL!!!"
+	askToQuit=true
+	while [[ $askToQuit == "true" ]]; do
+		cin info "Do you really want to exit? (Y/n) "
+		read answer
+		if [[ $answer == *[Yy]* ]] || [[ $answer == "" ]]; then
+			cout action "Quiting"
+			exit 0
+		elif [[ $answer == *[Nn]* ]]; then
+			cout action "Rock on..."
+			askToQuit=false
+		fi
+	done
+}
+
 function checkCurrentKernel()
 {
 	cout action "Checking your current kernel version..."
@@ -156,6 +173,7 @@ function testTerminal()
 	fi
 }
 
+trap 'interrupt' INT
 checkRoot
 checkLinuxType
 checkDependencies
