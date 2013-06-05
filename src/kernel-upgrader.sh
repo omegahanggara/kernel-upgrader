@@ -165,7 +165,7 @@ function testTerminal()
 	cout action "Testing your terminal..."
 	sleep 1
 	cmd="whoami; sleep 3"
-	openTerminal 2&>1 /dev/null
+	openTerminal > /dev/null
 	if [[ $? -eq 0 ]]; then
 		cout info "Looks good..."
 		sleep 1
