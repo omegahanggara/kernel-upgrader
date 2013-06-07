@@ -165,12 +165,50 @@ function testTerminal()
 	cout action "Testing your terminal..."
 	sleep 1
 	cmd="whoami; sleep 3"
-	openTerminal > /dev/null
+	openTerminal > /dev/null 2>&1
 	if [[ $? -eq 0 ]]; then
 		cout info "Looks good..."
 		sleep 1
 	else
 		cout error "Looks not good... It's OK tho, but you may experience some problems on installation..."
+	fi
+}
+
+function createDirectory()
+{
+	cout action "Checking kernel directory on your home folder..."
+	sleep 1
+	if [[ -d ~/kernel ]]; then
+		cout info "Directory is found!"
+		sleep 1
+		askToDelete=true
+		while [[ $askToDelete == "true" ]]; do
+		cout info "Do you want to keep it? (Y/n)"
+		cin error "WARNING! Pressing n will delete whole folder! "
+		read answerToDelete
+		if [[ $answerToDelete == *[Yy]* ]] || [[ $answerToDelete == "" ]]; then
+			cout action "Keeping..."
+			sleep 1
+			askToDelete="false"
+		elif [[ $answerToDelete == *[Nn]* ]]; then
+			cout action "Delete whole folder..."
+			sleep 1
+			rm -rfv ~/kernel
+			sleep 1
+			cout action "Create a new one..."
+			sleep 1
+			mkdir ~/kernel
+			askToDelete="false"
+		else
+			cout error "Wrong statement!"
+		fi
+		done
+	else
+		cout error "Directory not found!"
+		sleep 1
+		cout action "Creating kernel directory on your home folder..."
+		sleep 1
+		mkdir ~/kernel
 	fi
 }
 
@@ -183,3 +221,4 @@ checkLatestKernel
 getURL
 setTerminal
 testTerminal
+createDirectory
