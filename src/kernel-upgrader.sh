@@ -2,9 +2,9 @@
 
 # Variable
 currentKernel=$(uname -r)
-latestKernel=$(curl https://www.kernel.org/ -s | sed -n "/<td id=\"latest_link\">/,/<\/td>/p" | sed -n -e 's/.*<a.*>\(.*\)<\/a>.*/\1/p');
-urlLatestKernel=$(echo "https://www.kernel.org$(curl https://www.kernel.org/ -s | grep $latestKernel | grep downloadarrow | awk -F "<" {'print $2'} | sed "s/a href\=\".\|\">//g")")
 totalProcessor=$(nproc)
+latestKernel=
+urlLatestKernel=
 linuxType=$(lsb_release --short --id)
 
 # Function
@@ -49,6 +49,31 @@ function interrupt()
 			askToQuit=false
 		fi
 	done
+}
+
+function checkInternetConnection()
+{
+	cout action "Checking Internet Connection..."
+	sleep 1
+	command -v dig > /dev/null 2>&1
+	if [[ $? = 0 ]]; then
+		dig www.google.com +time=3 +tries=1 @8.8.8.8 > /dev/null 2>&1
+		if [[ $? -eq 0 ]]; then
+			cout info "Good, you have Internet Connection..."
+			latestKernel=$(curl https://www.kernel.org/ -s | sed -n "/<td id=\"latest_link\">/,/<\/td>/p" | sed -n -e 's/.*<a.*>\(.*\)<\/a>.*/\1/p');
+			urlLatestKernel=$(echo "https://www.kernel.org$(curl https://www.kernel.org/ -s | grep $latestKernel | grep downloadarrow | awk -F "<" {'print $2'} | sed "s/a href\=\".\|\">//g")")
+		else
+			cout error "You don't have Internet Connection!"
+			sleep 1
+			cout info "This script requiring Internet Connection!"
+			sleep 1
+			cout info "Make sure you have Internet Connection, then execute this script again"
+			sleep 1
+			cout action "Quiting..."
+			sleep 2
+			exit 1
+		fi
+	fi
 }
 
 function checkCurrentKernel()
@@ -213,6 +238,7 @@ function createDirectory()
 }
 
 trap 'interrupt' INT
+checkInternetConnection
 checkRoot
 checkLinuxType
 checkDependencies
