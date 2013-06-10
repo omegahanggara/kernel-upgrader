@@ -11,7 +11,8 @@ linuxType=$(lsb_release --short --id)
 cin() {
 	if [ "$1" == "action" ] ; then output="\e[01;32m[>]\e[00m" ; fi
 	if [ "$1" == "info" ] ; then output="\e[01;33m[i]\e[00m" ; fi
-	if [ "$1" == "error" ] ; then output="\e[01;31m[!]\e[00m" ; fi
+	if [ "$1" == "warning" ] ; then output="\e[01;32m[w]\e[00m" ; fi
+	if [ "$1" == "error" ] ; then output="\e[01;31m[e]\e[00m" ; fi
 	output="$output $2"
 	echo -en "$output"
 }
@@ -19,7 +20,8 @@ cin() {
 cout() {
 	if [ "$1" == "action" ] ; then output="\e[01;32m[>]\e[00m" ; fi
 	if [ "$1" == "info" ] ; then output="\e[01;33m[i]\e[00m" ; fi
-	if [ "$1" == "error" ] ; then output="\e[01;31m[!]\e[00m" ; fi
+	if [ "$1" == "warning" ] ; then output="\e[01;32m[w]\e[00m" ; fi
+	if [ "$1" == "error" ] ; then output="\e[01;31m[e]\e[00m" ; fi
 	output="$output $2"
 	echo -e "$output"
 }
@@ -237,6 +239,67 @@ function createDirectory()
 	fi
 }
 
+function checkKernelSourceFile()
+{
+	sleep 1
+	cout action "Checking whether if you have the source file or not."
+	fileIsExist=false
+	while [[ $fileIsExist == "false" ]]; do
+	if [[ $(ls ~/kernel | awk -F "-" {'print $2'} | sed 's/.tar.xz//g') == $latestKernel ]]; then
+		cout info "You have the file source."
+		fileIsExist=true
+	else
+		cout warning "You don't have the file source"
+		sleep 1
+		cout info "Looks like your source is out to date, or you don't have the latest kernel source on your ~/kernel directory"
+		sleep 1
+		cout info "If you have the source but it's not on ~/kernel directory, you can put it on ~/kernel directory now"
+		sleep 2
+		haveSourceFile=false
+		while [[ $haveSourceFile == "false" ]]; do
+			cout info "Do you have latest kernel source (Y/n) ?"
+			cin info "If you answer 'no', we will take you to download section: "
+			read answerHaveSourceFile
+			if [[ $answerHaveSourceFile == *[Yy]* ]] || [[ $answerHaveSourceFile == "" ]]; then
+				haveSourceFile=true
+				fileIsExist=true
+				cout info "Please put kernel source on ~/kernel directory"
+				haveCopied=false
+				while [[ $haveCopied == "false" ]]; do
+					cin info "Have you? (Y/n) "
+					read answerHaveCopied
+					if [[ $answerHaveCopied == *[Yy]* ]] || [[ $answerHaveCopied == "" ]]; then
+						haveCopied=true
+						haveSourceFile=true
+						checkKernelSourceFile
+					elif [[ $answerHaveCopied == *[Nn]* ]]; then
+						cout info "Take your time"
+						sleep 1
+					else
+						cout error "Wrong input!"
+						sleep 1
+					fi
+				done
+			elif [[ $answerHaveSourceFile == *[Nn]* ]]; then
+				cout info "Will download the source..."
+				sleep 1
+				fileIsExist=true
+			fi
+		done
+	fi
+	done
+}
+
+function downloadSource()
+{
+	cout action "Will downloading the kernel sources... This will take a several minutes, depend on your Internet Connection."
+	sleep 1
+	cmd="cd ~/kernel; curl $urlLatestKernel"
+	openTerminal > /dev/null 2>&1
+	sleep 1
+	cout info "Done..."
+}
+
 trap 'interrupt' INT
 checkInternetConnection
 checkRoot
@@ -248,3 +311,4 @@ getURL
 setTerminal
 testTerminal
 createDirectory
+checkKernelSourceFile
