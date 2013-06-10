@@ -38,6 +38,7 @@ function checkRoot()
 
 function interrupt()
 {
+	echo -e "\n"
 	cout error "CAUGHT INTERRUPT SIGNAL!!!"
 	askToQuit=true
 	while [[ $askToQuit == "true" ]]; do
@@ -300,6 +301,16 @@ function downloadSource()
 	cout info "Done..."
 }
 
+function extractPackage()
+{
+	cout action "Extracting package..."
+	sleep 1
+	cmd="cd ~/kernel; tar -xJvf *.tar.xz; sleep 2"
+	openTerminal > /dev/null 2>&1
+	cout info "Done"
+	sleep 1
+}
+
 trap 'interrupt' INT
 checkInternetConnection
 checkRoot
@@ -312,3 +323,4 @@ setTerminal
 testTerminal
 createDirectory
 checkKernelSourceFile
+extractPackage
