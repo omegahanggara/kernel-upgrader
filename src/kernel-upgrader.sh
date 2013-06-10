@@ -281,9 +281,9 @@ function checkKernelSourceFile()
 					fi
 				done
 			elif [[ $answerHaveSourceFile == *[Nn]* ]]; then
-				cout info "Will download the source..."
 				sleep 1
 				fileIsExist=true
+				downloadSource
 			fi
 		done
 	fi
@@ -312,4 +312,3 @@ setTerminal
 testTerminal
 createDirectory
 checkKernelSourceFile
-downloadSource
