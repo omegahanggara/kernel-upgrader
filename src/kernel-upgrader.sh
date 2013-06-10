@@ -312,3 +312,4 @@ setTerminal
 testTerminal
 createDirectory
 checkKernelSourceFile
+downloadSource
