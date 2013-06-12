@@ -121,20 +121,24 @@ function checkDependencies()
 		cout action "Checking build-essential..."
 		sleep 1
 		if [[ $(dpkg -l | grep ii | grep build-essential | awk {'print $2'}) == "" ]]; then
-			cout error "build-essential is not installed yet. Please install it before using this script."
-			cout action "Quiting..."
+			cout warning "build-essential is not installed yet!"
+			cout action "Installing build-essential"
+			cmd="apt-get install build-essential --yes; sleep 2"
+			openTerminal > /dev/null 2>&1
+			cout info "Done..."
 			sleep 1
-			exit 1
 		else
 			cout info "Found build-essential."
 		fi
 		cout action "Checking fakeroot..."
 		sleep 1
 		if [[ $(dpkg -l | grep ii | grep fakeroot | awk {'print $2'}) == "" ]]; then
-			cout error "fakeroot is not installed yet. Please install it before using this script."
-			cout action "Quiting..."
+			cout error "fakeroot is not installed yet!"
+			cout action "Installing fakeroot..."
+			cmd="apt-get install fakeroot --yes; sleep 2"
+			openTerminal > /dev/null 2>&1
+			cout info "Done..."
 			sleep 1
-			exit 1
 		else
 			cout info "Found fakeroot."
 		fi
