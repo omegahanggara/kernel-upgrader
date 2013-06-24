@@ -196,7 +196,7 @@ function testTerminal()
 {
 	cout action "Testing your terminal..."
 	sleep 1
-	cmd="whoami; sleep 3"
+	cmd="whoami; sleep 2"
 	openTerminal > /dev/null 2>&1
 	if [[ $? -eq 0 ]]; then
 		cout info "Looks good..."
@@ -247,16 +247,16 @@ function createDirectory()
 function checkKernelSourceFile()
 {
 	sleep 1
-	cout action "Checking whether if you have the source file or not."
+	cout action "Checking linux-$latestKernel.tar.xz in ~/kernel directory."
 	fileIsExist=false
 	while [[ $fileIsExist == "false" ]]; do
-	if [[ $(ls ~/kernel | awk -F "-" {'print $2'} | sed 's/.tar.xz//g') == $latestKernel ]]; then
+	if [[ $(ls ~/kernel | grep $latestKernel) == "linux-$latestKernel.tar.xz" ]]; then
 		cout info "You have the file source."
 		fileIsExist=true
 	else
-		cout warning "You don't have the file source"
+		cout warning "You don't have linux-$latestKernel.tar.xz in ~/kernel directory!"
 		sleep 1
-		cout info "Looks like your source is out to date, or you don't have the latest kernel source on your ~/kernel directory"
+		cout info "Renaming file may cause this error."
 		sleep 1
 		cout info "If you have the source but it's not on ~/kernel directory, you can put it on ~/kernel directory now"
 		sleep 2
@@ -288,6 +288,7 @@ function checkKernelSourceFile()
 			elif [[ $answerHaveSourceFile == *[Nn]* ]]; then
 				sleep 1
 				fileIsExist=true
+				haveSourceFile=true
 				downloadSource
 			fi
 		done
@@ -299,7 +300,7 @@ function downloadSource()
 {
 	cout action "Will downloading the kernel sources... This will take a several minutes, depend on your Internet Connection."
 	sleep 1
-	cmd="cd ~/kernel; curl $urlLatestKernel"
+	cmd="cd ~/kernel; curl -q $urlLatestKernel -o linux-$latestKernel.tar.xz"
 	openTerminal > /dev/null 2>&1
 	sleep 1
 	cout info "Done..."
@@ -309,9 +310,39 @@ function extractPackage()
 {
 	cout action "Extracting package..."
 	sleep 1
-	cmd="cd ~/kernel; tar -xJvf *.tar.xz; sleep 2"
+	cmd="cd ~/kernel; tar -xJvf linux-$latestKernel.tar.xz; sleep 2"
 	openTerminal > /dev/null 2>&1
 	cout info "Done"
+	sleep 1
+}
+
+function makeXConfig()
+{
+	cd ~/kernel/linux-$latestKernel
+	cout action "Configuring sources..."
+	sleep 1
+	cout info "Note! Configuring sources is not easy! It may take a hour, or worse days. But I'll give you some tips..."
+	sleep 1
+	doneread=notyet
+	while [[ $doneread == "notyet" ]]; do
+		cout info "Take a look at 'Network device support', make sure your driver listed there, and check-listed!"
+		cout info "If you need packet forwarding feature, you may to activate it. By default, it is deactivated. You can find it at 'Networking support - Network Packet Filtering Framework (Net Filter) - IP : Netfilter Configuration - IPv4 NAT - Redirect Target Support'"
+		cin info "Press enter to continue"
+		read answerDoneRead
+		if [[ $answerDoneRead == "" ]]; then
+			doneread=alldone
+			cout action "Continuing to next step..."
+		else
+			doneread=notyet
+		fi
+	done
+	cout info "Here we go!"
+	cmd="make -j $(nproc) xconfig"
+	openTerminal > /dev/null 2>&1
+	if [[ $(head -n 1 .config) != "# red-dragon" ]]; then
+		sed -e '1i\# red-dragon\' -i .config
+	fi
+	cout info "All done! So far so easy, right?"
 	sleep 1
 }
 
