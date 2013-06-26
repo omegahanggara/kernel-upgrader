@@ -250,7 +250,7 @@ function checkKernelSourceFile()
 	cout action "Checking linux-$latestKernel.tar.xz in ~/kernel directory."
 	fileIsExist=false
 	while [[ $fileIsExist == "false" ]]; do
-	if [[ $(ls ~/kernel | grep $latestKernel) == "linux-$latestKernel.tar.xz" ]]; then
+	if [[ -f ~/kernel/linux-$latestKernel.tar.xz ]]; then
 		cout info "You have the file source."
 		fileIsExist=true
 	else
@@ -308,42 +308,52 @@ function downloadSource()
 
 function extractPackage()
 {
-	cout action "Extracting package..."
-	sleep 1
-	cmd="cd ~/kernel; tar -xJvf linux-$latestKernel.tar.xz; sleep 2"
-	openTerminal > /dev/null 2>&1
-	cout info "Done"
-	sleep 1
+	if [[ -d ~/kernel/linux-$latestKernel ]]; then
+		cout info "Source already extracted. Skipping extract to avoid replaced config file."
+		sleep 1
+	else
+		cout action "Extracting package..."
+		sleep 1
+		cmd="cd ~/kernel; tar -xJvf linux-$latestKernel.tar.xz; sleep 2"
+		openTerminal > /dev/null 2>&1
+		cout info "Done"
+		sleep 1
+	fi
 }
 
 function makeXConfig()
 {
 	cd ~/kernel/linux-$latestKernel
-	cout action "Configuring sources..."
-	sleep 1
-	cout info "Note! Configuring sources is not easy! It may take a hour, or worse days. But I'll give you some tips..."
-	sleep 1
-	doneread=notyet
-	while [[ $doneread == "notyet" ]]; do
-		cout info "Take a look at 'Network device support', make sure your driver listed there, and check-listed!"
-		cout info "If you need packet forwarding feature, you may to activate it. By default, it is deactivated. You can find it at 'Networking support - Network Packet Filtering Framework (Net Filter) - IP : Netfilter Configuration - IPv4 NAT - Redirect Target Support'"
-		cin info "Press enter to continue"
-		read answerDoneRead
-		if [[ $answerDoneRead == "" ]]; then
-			doneread=alldone
-			cout action "Continuing to next step..."
-		else
-			doneread=notyet
+	if [[ $(head -n 1 .config) == "# red-dragon" ]]; then
+		cout info "Source already configured... Skipping make xconfig step..."
+		sleep 1
+	else
+		cout action "Configuring sources..."
+		sleep 1
+		cout info "Note! Configuring sources is not easy! It may take a hour, or worse days. But I'll give you some tips..."
+		sleep 1
+		doneread=notyet
+		while [[ $doneread == "notyet" ]]; do
+			cout info "Take a look at 'Network device support', make sure your driver listed there, and check-listed!"
+			cout info "If you need packet forwarding feature, you may to activate it. By default, it is deactivated. You can find it at 'Networking support - Network Packet Filtering Framework (Net Filter) - IP : Netfilter Configuration - IPv4 NAT - Redirect Target Support'"
+			cin info "Press enter to continue"
+			read answerDoneRead
+			if [[ $answerDoneRead == "" ]]; then
+				doneread=alldone
+				cout action "Continuing to next step..."
+			else
+				doneread=notyet
+			fi
+		done
+		cout info "Here we go!"
+		cmd="make -j $(nproc) xconfig"
+		openTerminal > /dev/null 2>&1
+		if [[ $(head -n 1 .config) != "# red-dragon" ]]; then
+			sed -e '1i\# red-dragon\' -i .config
 		fi
-	done
-	cout info "Here we go!"
-	cmd="make -j $(nproc) xconfig"
-	openTerminal > /dev/null 2>&1
-	if [[ $(head -n 1 .config) != "# red-dragon" ]]; then
-		sed -e '1i\# red-dragon\' -i .config
+		cout info "All done! So far so easy, right?"
+		sleep 1
 	fi
-	cout info "All done! So far so easy, right?"
-	sleep 1
 }
 
 trap 'interrupt' INT
@@ -359,3 +369,4 @@ testTerminal
 createDirectory
 checkKernelSourceFile
 extractPackage
+makeXConfig
